@@ -94,10 +94,25 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 		return newLine;
 	}
-		
+	
+	function getBoardState() {
+        return squares.map(square => parseInt(square.innerHTML) || 0);
+    }
+
+    function setBoardState(state) {
+        for (let i = 0; i < state.length; i++) {
+            squares[i].innerHTML = state[i] || '';
+        }
+        updateBoard();
+    }
+
+    function boardsAreEqual(board1, board2) {
+        return board1.every((value, index) => value === board2[index]);
+    }
 
     // Movimiento hacia la derecha
     function moveRight() {
+        let hasChanged = false;
         for (let i = 0; i < 16; i += 4) {
             const row = [
                 parseInt(squares[i].innerHTML) || 0,
@@ -107,14 +122,17 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             const newRow = moveAndCombineLine(row.reverse()).reverse();
             for (let j = 0; j < 4; j++) {
+                if (squares[i + j].innerHTML != newRow[j]) hasChanged = true;
                 squares[i + j].innerHTML = newRow[j] || '';
-                updateTileColor(squares[i + j]);
+				updateTileColor(squares[i + j]);
             }
         }
+        return hasChanged;
     }
 
     // Movimiento hacia la izquierda
     function moveLeft() {
+        let hasChanged = false;
         for (let i = 0; i < 16; i += 4) {
             const row = [
                 parseInt(squares[i].innerHTML) || 0,
@@ -124,14 +142,16 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             const newRow = moveAndCombineLine(row);
             for (let j = 0; j < 4; j++) {
+                if (squares[i + j].innerHTML != newRow[j]) hasChanged = true;
                 squares[i + j].innerHTML = newRow[j] || '';
-                updateTileColor(squares[i + j]);
+				updateTileColor(squares[i + j]);
             }
         }
+        return hasChanged;
     }
 
-    // Movimiento hacia abajo
     function moveDown() {
+        let hasChanged = false;
         for (let i = 0; i < 4; i++) {
             const column = [
                 parseInt(squares[i].innerHTML) || 0,
@@ -141,14 +161,16 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             const newColumn = moveAndCombineLine(column.reverse()).reverse();
             for (let j = 0; j < 4; j++) {
+                if (squares[i + j * width].innerHTML != newColumn[j]) hasChanged = true;
                 squares[i + j * width].innerHTML = newColumn[j] || '';
-                updateTileColor(squares[i + j * width]);
+				updateTileColor(squares[i + j * width]);
             }
         }
+        return hasChanged;
     }
 
-    // Movimiento hacia arriba
     function moveUp() {
+        let hasChanged = false;
         for (let i = 0; i < 4; i++) {
             const column = [
                 parseInt(squares[i].innerHTML) || 0,
@@ -158,105 +180,89 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
             const newColumn = moveAndCombineLine(column);
             for (let j = 0; j < 4; j++) {
+                if (squares[i + j * width].innerHTML != newColumn[j]) hasChanged = true;
                 squares[i + j * width].innerHTML = newColumn[j] || '';
-                updateTileColor(squares[i + j * width]);
+				updateTileColor(squares[i + j * width]);
             }
         }
+        return hasChanged;
     }
 
-	function checkWin() {
-		for (let i = 0; i < squares.length; i++) {
-			if (parseInt(squares[i].innerHTML) === 2048) {
-				alert("¡Felicidades, has ganado!");
-				return true; // El jugador ha ganado
-			}
-		}
-		return false; // No ha ganado
-	}
-
-	function checkLose() {
-		// Comprobar si hay espacios vacíos
-		const emptySquares = squares.filter(square => !parseInt(square.innerHTML));
-		if (emptySquares.length > 0) {
-			return false; // Aún hay espacios vacíos, el juego no ha terminado
-		}
-	
-		// Comprobar si hay movimientos válidos (combinaciones posibles)
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 3; j++) {
-				if (parseInt(squares[i * 4 + j].innerHTML) === parseInt(squares[i * 4 + j + 1].innerHTML) ||
-					parseInt(squares[j * 4 + i].innerHTML) === parseInt(squares[(j + 1) * 4 + i].innerHTML)) {
-					return false; // Hay movimientos válidos, el juego no ha terminado
-				}
-			}
-		}
-	
-		alert("¡Has perdido! No quedan movimientos.");
-		return true; // El jugador ha perdido
-	}	
-
-    // Controles del teclado
     function control(e) {
+        const prevState = getBoardState();
+        let hasChanged = false;
+
         switch (e.keyCode) {
-            case 37:
-                moveLeft();
+            case 37: // Left
+                hasChanged = moveLeft();
                 break;
-            case 38:
-                moveUp();
+            case 38: // Up
+                hasChanged = moveUp();
                 break;
-            case 39:
-                moveRight();
+            case 39: // Right
+                hasChanged = moveRight();
                 break;
-            case 40:
-                moveDown();
+            case 40: // Down
+                hasChanged = moveDown();
                 break;
         }
-        generate();
+
+        if (hasChanged) {
+            generate();
+        }
+
         updateBoard();
         updateScore();
 
-		if (checkWin()) return; // Si ha ganado, detener el juego
-    	if (checkLose()) return;
+        if (checkWin()) return;
+        if (checkLose()) return;
     }
 
     // Detectar deslizamiento táctil
-    let startX, startY;
-    let threshold = 50; // Umbral de movimiento para detección de deslizamiento
+    // Detectar deslizamiento táctil
+	let startX, startY;
+	let threshold = 50; // Umbral de movimiento para detección de deslizamiento
 
-    function touchStart(e) {
-        const touch = e.touches[0];
-        startX = touch.pageX;
-        startY = touch.pageY;
-    }
+	function touchStart(e) {
+		const touch = e.touches[0];
+		startX = touch.pageX;
+		startY = touch.pageY;
+	}
 
-    function touchEnd(e) {
-        const touch = e.changedTouches[0];
-        const diffX = touch.pageX - startX;
-        const diffY = touch.pageY - startY;
+	function touchEnd(e) {
+		const touch = e.changedTouches[0];
+		const diffX = touch.pageX - startX;
+		const diffY = touch.pageY - startY;
 
-        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-            // Movimiento horizontal
-            if (diffX > 0) {
-                moveRight();
-            } else {
-                moveLeft();
-            }
-        } else if (Math.abs(diffY) > threshold) {
-            // Movimiento vertical
-            if (diffY > 0) {
-                moveDown();
-            } else {
-                moveUp();
-            }
-        }
+		const prevState = getBoardState();
+		let hasChanged = false;
 
-        generate();
-        updateBoard();
-        updateScore();
+		if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+			// Movimiento horizontal
+			if (diffX > 0) {
+				hasChanged = moveRight();
+			} else {
+				hasChanged = moveLeft();
+			}
+		} else if (Math.abs(diffY) > threshold) {
+			// Movimiento vertical
+			if (diffY > 0) {
+				hasChanged = moveDown();
+			} else {
+				hasChanged = moveUp();
+			}
+		}
+
+		if (hasChanged) {
+			generate();
+		}
+
+		updateBoard();
+		updateScore();
 
 		if (checkWin()) return; // Si ha ganado, detener el juego
-    	if (checkLose()) return;
-    }
+		if (checkLose()) return;
+	}
 
     // Agregar eventos táctiles
     gridDisplay.addEventListener('touchstart', touchStart);
