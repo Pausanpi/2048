@@ -22,9 +22,17 @@ body {
     padding: 10px;
 }
 
+@font-face {
+	font-family: 'letra';
+	src: url('font/Bagel.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
 /* Header Styling */
 h1 {
-    font-size: 50px;
+	font-family: 'letra';
+    font-size: 70px;
     color: #2d7188; /* Deep sea blue */
     margin-bottom: 20px;
     text-align: center;
@@ -188,7 +196,7 @@ button {
     cursor: pointer;
 }
 
-/* Media Queries for Responsiveness */
+/*--------Media Queries for Responsiveness--------*/
 @media (max-width: 768px) {
 	body {
         min-height: 100vh; /* Ensure full height even on mobile */

@@ -188,7 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return hasChanged;
     }
 
+//------------------- Eventos Teclado -------------------
     function control(e) {
+
         const prevState = getBoardState();
         let hasChanged = false;
 
@@ -213,13 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBoard();
         updateScore();
-
-        if (checkWin()) return;
-        if (checkLose()) return;
     }
 
-    // Detectar deslizamiento táctil
-    // Detectar deslizamiento táctil
+//------------------- Eventos Táctiles -------------------
 	let startX, startY;
 	let threshold = 50; // Umbral de movimiento para detección de deslizamiento
 
@@ -230,6 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function touchEnd(e) {
+		if (isGameOver() || isGameWon()) {
+			return;
+		}
+		
 		const touch = e.changedTouches[0];
 		const diffX = touch.pageX - startX;
 		const diffY = touch.pageY - startY;
@@ -259,9 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		updateBoard();
 		updateScore();
-
-		if (checkWin()) return; // Si ha ganado, detener el juego
-		if (checkLose()) return;
 	}
 
     // Agregar eventos táctiles
@@ -269,7 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
     gridDisplay.addEventListener('touchend', touchEnd);
 
     // Reiniciar el juego
-    newGameButton.addEventListener('click', () => location.reload());
+    newGameButton.addEventListener('click', () => {
+		hideMessage();
+		location.reload();
+	});
 
     document.addEventListener('keydown', control);
     createBoard();
