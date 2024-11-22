@@ -2,7 +2,7 @@
 
 Proyecto de la __Piscina Piloto de Globant.__
 
-El proyecto consistió en recrear el juego 2048 con HTML, CSS y JavaScript, sin ningún framework.
+El proyecto consiste en recrear el juego 2048 con HTML, CSS y JavaScript, sin ningún framework.
 
 
 __Funcionamiento:__
